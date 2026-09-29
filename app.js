@@ -180,14 +180,15 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
-// Native dropdown vullen voor mobiel
+// Native dropdown vullen voor mobiel (alfabetisch gesorteerd op naam)
 function populateSelect() {
   const select = document.getElementById('quickSelect');
   select.innerHTML = '<option value="">▼ Of kies je naam uit de lijst...</option>';
-  items.forEach(i => {
+  const sortedByName = [...items].sort((a, b) => a.name.localeCompare(b.name, 'nl'));
+  sortedByName.forEach(i => {
     const opt = document.createElement('option');
     opt.value = i.id;
-    opt.textContent = `#${i.id} - ${i.name}`;
+    opt.textContent = `${i.name} (#${i.id})`;
     select.appendChild(opt);
   });
 }
