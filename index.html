@@ -3,25 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Draaiboek Index</title>
-  <meta name="description" content="Vind direct jouw draaiboek op je mobiel">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📋</text></svg>">
+  <title>Explore 2026 - Draaiboek Index</title>
+  <meta name="description" content="Explore 2026 Arcade - Vind direct jouw draaiboek op je mobiel">
+  <link rel="icon" type="image/png" href="logo.png">
   
-  <!-- Front-end opmaak -->
+  <!-- Front-end opmaak (Explore 2026 Arcade Thema) -->
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="app">
     <header>
-      <h1>📋 Draaiboek Index</h1>
-      <div class="subtitle">Vind direct jouw draaiboek</div>
+      <img src="logo.png" alt="Explore 2026 Arcade Logo" class="app-logo">
+      <h1 class="app-title">DRAAIBOEK INDEX</h1>
+      <div class="subtitle">Level Up Your Adventure • Regio Hollands Midden</div>
     </header>
 
     <!-- Opgeslagen Draaiboeken (bovenaan bewaard voor snelle toegang) -->
     <div id="savedSection" class="saved-section" style="display: none;">
       <div class="section-label">
         <span>⭐ Mijn Opgeslagen Draaiboeken</span>
-        <span id="savedCounter"></span>
+        <span id="savedCounter" class="label-badge"></span>
       </div>
       <div id="savedList" class="saved-list"></div>
     </div>
@@ -37,7 +38,7 @@
     <!-- Lijst overzicht -->
     <div class="section-label">
       <span>Alle draaiboeken</span>
-      <span id="counter">Laden...</span>
+      <span id="counter" class="label-badge">Laden...</span>
     </div>
 
     <div id="loadingMsg" class="status-msg">Draaiboeken laden...</div>

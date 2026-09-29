@@ -1,55 +1,47 @@
 # Draaiboek Index
 
-A lightweight, serverless single-page web app hosted on **GitHub Pages** that dynamically loads, searches, and pins event scripts (*draaiboeken*) using a **Google Sheets** spreadsheet as its backend.
+A lightweight, mobile-first web app hosted on **GitHub Pages** that dynamically loads, searches, and pins event scripts (*draaiboeken*) using a **Google Sheets** spreadsheet as its backend.
 
 ---
 
 ## Features
 
-- **Live Google Sheets Integration:** Fetches entries automatically via public CSV export—no backend or redeployment needed when updating rows.
-- **Instant Search:** Filter instantly by draaiboek ID, role, team, or personal name.
-- **One-Click PDF Access:** Cleans and opens direct Google Drive PDF links in a new tab.
-- **Quick Links (Pinning):** Pin frequently accessed draaiboeken as chips at the top of the interface.
-- **Recent History:** Automatically saves the most recently opened script for fast one-click recovery.
-- **Zero Build Tools:** Single file HTML/CSS/vanilla JavaScript using [Papa Parse](https://www.papaparse.com/) via CDN.
-
----
-
-## Data Structure
-
-The app reads a CSV formatted like `Tijdplanning - QR-codes.csv`:
-
-| Column Index | Field Name | Example Value | Description |
-| :--- | :--- | :--- | :--- |
-| `0` | Draaiboek ID | `10`, `9`, `53` | Numeric script ID |
-| `1` | Name / Team | `Thema`, `Alexander Pizarro De La Iglesia` | Role, team, or person name |
-| `2` | PDF URL | `https://drive.google.com/file/d/.../view?usp=drivesdk,DB010.pdf` | Direct Drive link (app automatically strips `,DBxxx.pdf`) |
+- **No Hardcoded Data / URLs:** The app does not embed any private URLs. All live sheet links are passed dynamically via the shareable URL parameter (`?sheet=...`).
+- **Dynamic Fake Test Set:** When opened without a sheet parameter (or in test mode), the app generates a randomized fake test dataset with fake names (e.g. *Robin Demo*, *Jesse Test*, *Keuken Crew*) and fake URLs (`https://example.com/fake-draaiboeken/test-db015.pdf`).
+- **Instant Search & Native Mobile Dropdown:** Fast filtering by name, role, or draaiboek number.
+- **Multiple Saved Draaiboeken:** Pin multiple draaiboeken at the top of the screen (stored in `localStorage`).
+- **Explore 2026 Arcade Retro Theme:** High-contrast neon aesthetics tailored for phone screens.
+- **Zero Build Tools:** Pure vanilla JavaScript, HTML5, CSS3, and Papa Parse via CDN.
 
 ---
 
 ## Project Structure
 
 - **Front-end (Visuals & Mobile UI):**
-  - `index.html`: Clean HTML skeleton.
-  - `style.css`: Mobile-first styling, touch targets, and automatic dark mode.
-  - `app.js`: User interaction, live search, native dropdown selection, and local storage for "Jouw Draaiboek".
+  - [index.html](file:///run/media/bertvanlange/Shared/Git_projects/draaiboek_index/index.html): Mobile-first layout with Arcade logo and saved chips.
+  - [style.css](file:///run/media/bertvanlange/Shared/Git_projects/draaiboek_index/style.css): Explore 2026 Arcade retro theme (neon cyan/magenta/yellow).
+  - [app.js](file:///run/media/bertvanlange/Shared/Git_projects/draaiboek_index/app.js): Search filter, dropdown selection, and multi-save management.
 - **Back-end (Data & Google Sheets Integration):**
-  - `backend.js`: Fetches and parses the Google Sheets CSV, cleans Google Drive URLs, and provides the dataset.
+  - [backend.js](file:///run/media/bertvanlange/Shared/Git_projects/draaiboek_index/backend.js): Reads `?sheet=` URL parameter, parses CSV, extracts script IDs, and dynamically generates randomized fake test data if no sheet is provided.
 
 ---
 
-## Setup & Deployment
+## Usage & Sharing
 
-### 1. Publish Your Google Sheet
-1. Open your Google Sheet containing the draaiboek links.
-2. Go to **File > Share > Publish to web** (*Bestand > Delen > Publiceren op internet*).
-3. Select your sheet tab and choose **Comma-separated values (.csv)** as the format.
-4. Click **Publish** and copy the generated link.
+### 1. Shareable Link with Live Google Sheet
+To share the app with participants, append your published Google Sheet CSV URL via `?sheet=`:
 
-### 2. Configure `backend.js`
-1. Clone or download this repository.
-2. Open `backend.js` in an editor.
-3. Replace `SHEET_CSV_URL` (line 10) with your published Google Sheet CSV link:
-   ```javascript
-   const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1v.../pub?output=csv";
-   ```
+```text
+https://<username>.github.io/draaiboek_index/?sheet=https://docs.google.com/spreadsheets/d/e/2PACX-1v.../pub?gid=0&single=true&output=csv
+```
+
+The app also accepts `?sheet_csv_url=`, `?csv=`, or `?url=`.
+
+### 2. Testing with Randomized Fake Data
+Simply open the app without any parameters (or with `?demo`):
+
+```text
+http://127.0.0.1:5500/index.html
+```
+
+The app will dynamically generate a randomized set of fake names, test roles, unique IDs, and dummy URLs. Every reload generates a fresh random combination using the Fisher-Yates shuffle algorithm.
