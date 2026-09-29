@@ -27,6 +27,17 @@ The app reads a CSV formatted like `Tijdplanning - QR-codes.csv`:
 
 ---
 
+## Project Structure
+
+- **Front-end (Visuals & Mobile UI):**
+  - `index.html`: Clean HTML skeleton.
+  - `style.css`: Mobile-first styling, touch targets, and automatic dark mode.
+  - `app.js`: User interaction, live search, native dropdown selection, and local storage for "Jouw Draaiboek".
+- **Back-end (Data & Google Sheets Integration):**
+  - `backend.js`: Fetches and parses the Google Sheets CSV, cleans Google Drive URLs, and provides the dataset.
+
+---
+
 ## Setup & Deployment
 
 ### 1. Publish Your Google Sheet
@@ -35,9 +46,10 @@ The app reads a CSV formatted like `Tijdplanning - QR-codes.csv`:
 3. Select your sheet tab and choose **Comma-separated values (.csv)** as the format.
 4. Click **Publish** and copy the generated link.
 
-### 2. Configure `index.html`
+### 2. Configure `backend.js`
 1. Clone or download this repository.
-2. Open `index.html` in an editor.
-3. Locate line 186 and replace `SHEET_CSV_URL` with your published Google Sheet CSV link:
+2. Open `backend.js` in an editor.
+3. Replace `SHEET_CSV_URL` (line 10) with your published Google Sheet CSV link:
    ```javascript
-   const SHEET_CSV_URL = "[https://docs.google.com/spreadsheets/d/e/2PACX-1v.../pub?output=csv](https://docs.google.com/spreadsheets/d/e/2PACX-1v.../pub?output=csv)";
+   const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1v.../pub?output=csv";
+   ```
