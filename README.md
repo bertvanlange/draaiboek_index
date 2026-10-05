@@ -19,6 +19,7 @@ A lightweight, mobile-first web app hosted on **GitHub Pages** that dynamically 
 
 - **Front-end (Visuals & Mobile UI):**
   - [index.html](file:///run/media/bertvanlange/Shared/Git_projects/draaiboek_index/index.html): Mobile-first layout with Arcade logo and saved chips.
+  - [ben_jij_in_de_KVK_geweest.html](file:///run/media/bertvanlange/Shared/Git_projects/draaiboek_index/ben_jij_in_de_KVK_geweest.html): GPS Geolocation check (*Ben jij al in de kampvuurkuil geweest??*) with radar proximity tracking and target redirection.
   - [style.css](file:///run/media/bertvanlange/Shared/Git_projects/draaiboek_index/style.css): Explore 2026 Arcade retro theme (neon cyan/magenta/yellow).
   - [app.js](file:///run/media/bertvanlange/Shared/Git_projects/draaiboek_index/app.js): Search filter, dropdown selection, and multi-save management.
 - **Back-end (Data & Google Sheets Integration):**
@@ -45,3 +46,22 @@ http://127.0.0.1:5500/index.html
 ```
 
 The app will dynamically generate a randomized set of fake names, test roles, unique IDs, and dummy URLs. Every reload generates a fresh random combination using the Fisher-Yates shuffle algorithm.
+
+---
+
+### 3. Kampvuurkuil GPS Check (`ben_jij_in_de_KVK_geweest.html`)
+Checks if a participant is physically in or near the campfire pit (*kampvuurkuil*) using HTML5 Geolocation. If within range, celebratory confetti triggers and the user is redirected to the destination URL.
+
+- **Direct link (uses default Het Naaldenveld coordinates or saved location):**
+  ```text
+  https://<username>.github.io/draaiboek_index/ben_jij_in_de_KVK_geweest.html
+  ```
+- **Custom coordinates via URL parameters:**
+  ```text
+  https://<username>.github.io/draaiboek_index/ben_jij_in_de_KVK_geweest.html?lat=52.363000&lng=4.580000&radius=35&url=index.html
+  ```
+- **Features:**
+  - Real-time distance calculation & "warm/koud" proximity thermometer.
+  - Built-in test simulator (*"Simuleer in Kuil"*) to test without travelling.
+  - Organizer tool (*"Sla Huidige Plek Op"*) to set coordinates on-site with 1 click.
+  - Generates shareable QR/URL links directly from the settings panel.

@@ -1,0 +1,991 @@
+<!-- moge bne jij al in de kvk geeweest -->
+
+<!-- ask for your location checks if it is in range of a set location. if so go to a url -->
+<!-- meanwile show a nice page wiht th explore logo and the question " ben jij al in de kampvuurkuil geweest??"  -->
+
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Explore 2026 - Ben jij al in de kampvuurkuil geweest??</title>
+  <meta name="description" content="Check of je al in de kampvuurkuil bent bij Explore 2026!">
+  <link rel="icon" type="image/png" href="logo.png">
+  
+  <!-- Explore 2026 Arcade Thema Basis -->
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    /* Aanvullende stijlen specifiek voor de Kampvuurkuil GPS Check */
+    .kvk-card {
+      background: var(--card);
+      border: 1.5px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .kvk-card.in-range {
+      border-color: var(--neon-green);
+      box-shadow: 0 0 25px rgba(0, 255, 102, 0.4), inset 0 0 15px rgba(0, 255, 102, 0.15);
+      animation: pulseGreen 2s infinite alternate;
+    }
+
+    @keyframes pulseGreen {
+      0% { box-shadow: 0 0 16px rgba(0, 255, 102, 0.3); }
+      100% { box-shadow: 0 0 28px rgba(0, 255, 102, 0.6); }
+    }
+
+    /* Radar & Kampvuur Visual */
+    .radar-container {
+      position: relative;
+      width: 170px;
+      height: 170px;
+      margin: 10px 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .radar-circle {
+      position: absolute;
+      border-radius: 50%;
+      border: 1px solid rgba(0, 240, 255, 0.25);
+    }
+    .radar-circle.c1 { width: 60px; height: 60px; }
+    .radar-circle.c2 { width: 110px; height: 110px; }
+    .radar-circle.c3 { 
+      width: 160px; 
+      height: 160px; 
+      border-color: rgba(0, 240, 255, 0.4);
+      box-shadow: inset 0 0 20px rgba(0, 240, 255, 0.08);
+    }
+
+    .radar-sweep {
+      position: absolute;
+      width: 80px;
+      height: 80px;
+      top: 5px;
+      left: 85px;
+      transform-origin: 0% 100%;
+      background: linear-gradient(45deg, rgba(0, 240, 255, 0.4) 0%, rgba(0, 240, 255, 0) 70%);
+      border-radius: 0 100% 0 0;
+      animation: sweep 3s linear infinite;
+      pointer-events: none;
+    }
+
+    .kvk-card.in-range .radar-sweep {
+      display: none;
+    }
+
+    @keyframes sweep {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Kampvuur Icoon & Vlammen */
+    .fire-icon-wrap {
+      position: relative;
+      z-index: 2;
+      font-size: 3.5rem;
+      filter: drop-shadow(0 0 12px rgba(255, 230, 0, 0.6));
+      transition: transform 0.3s ease;
+      cursor: default;
+    }
+
+    .kvk-card.in-range .fire-icon-wrap {
+      transform: scale(1.25);
+      animation: fireRoar 0.6s ease-in-out infinite alternate;
+      filter: drop-shadow(0 0 22px #ffe600) drop-shadow(0 0 35px #ff007f);
+    }
+
+    @keyframes fireRoar {
+      0% { transform: scale(1.2) rotate(-3deg); }
+      100% { transform: scale(1.3) rotate(3deg); }
+    }
+
+    /* Status Text & Badges */
+    .status-title {
+      font-size: 1.25rem;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      margin-bottom: 8px;
+      color: #ffffff;
+      text-transform: uppercase;
+    }
+
+    .status-title.highlight {
+      color: var(--neon-yellow);
+      text-shadow: 0 0 10px rgba(255, 230, 0, 0.6);
+    }
+
+    .status-title.success {
+      color: var(--neon-green);
+      text-shadow: 0 0 12px rgba(0, 255, 102, 0.7);
+    }
+
+    .distance-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #151b2e;
+      border: 1.5px solid var(--neon-cyan);
+      border-radius: 9999px;
+      padding: 8px 18px;
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #ffffff;
+      box-shadow: 0 0 12px rgba(0, 240, 255, 0.3);
+      margin: 10px 0;
+    }
+
+    .distance-badge.in-range {
+      border-color: var(--neon-green);
+      color: var(--neon-green);
+      box-shadow: 0 0 16px rgba(0, 255, 102, 0.4);
+    }
+
+    /* Thermometer / Proximity Warmte-meter */
+    .heat-meter-container {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 10px 14px;
+      margin: 10px 0 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .heat-meter-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .heat-meter-bar-bg {
+      width: 100%;
+      height: 10px;
+      background: #080a14;
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .heat-meter-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #00f0ff 0%, #ffe600 60%, #ff007f 100%);
+      border-radius: 999px;
+      transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 0 8px rgba(255, 230, 0, 0.5);
+    }
+
+    .heat-hint {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--neon-cyan);
+    }
+
+    .meta-info {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+
+    /* Knoppen & Acties */
+    .action-btn-main {
+      width: 100%;
+      background: linear-gradient(135deg, var(--neon-green) 0%, #00b347 100%);
+      color: #04080e;
+      border: none;
+      border-radius: var(--radius);
+      padding: 16px;
+      font-size: 1.05rem;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 0 20px rgba(0, 255, 102, 0.4);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-decoration: none;
+      margin-top: 12px;
+      transition: transform 0.15s ease, filter 0.15s ease;
+    }
+
+    .action-btn-main:active {
+      transform: scale(0.98);
+      filter: brightness(1.1);
+    }
+
+    .action-btn-secondary {
+      background: rgba(0, 240, 255, 0.1);
+      border: 1.5px solid var(--neon-cyan);
+      color: var(--neon-cyan);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      font-size: 0.92rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      width: 100%;
+      margin-top: 8px;
+      text-decoration: none;
+      box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+    }
+
+    .action-btn-secondary:active {
+      background: rgba(0, 240, 255, 0.2);
+      transform: scale(0.98);
+    }
+
+    /* Countdown Banner */
+    .countdown-banner {
+      background: rgba(0, 255, 102, 0.12);
+      border: 1px dashed var(--neon-green);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: #ffffff;
+      font-size: 0.88rem;
+      font-weight: 700;
+      margin-top: 12px;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .btn-cancel-countdown {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: #cbd5e1;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      cursor: pointer;
+    }
+
+    /* Alert / Error box */
+    .alert-box {
+      background: rgba(255, 0, 127, 0.12);
+      border: 1.5px solid var(--neon-pink);
+      border-radius: var(--radius);
+      padding: 14px;
+      color: #ffffff;
+      font-size: 0.88rem;
+      line-height: 1.45;
+      text-align: left;
+      margin: 10px 0;
+      width: 100%;
+    }
+
+    /* Collapsible Settings / Drawer */
+    .settings-panel {
+      background: #0b0e1b;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .settings-header {
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      user-select: none;
+    }
+
+    .settings-header:hover {
+      color: #ffffff;
+    }
+
+    .settings-body {
+      padding: 14px 16px 18px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      text-align: left;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .form-group label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--neon-cyan);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .form-group input {
+      background: #111524;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 9px 12px;
+      color: #ffffff;
+      font-size: 0.88rem;
+      outline: none;
+    }
+
+    .form-group input:focus {
+      border-color: var(--neon-cyan);
+      box-shadow: var(--glow-cyan);
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn-sm-arcade {
+      background: #151b2e;
+      border: 1px solid var(--neon-yellow);
+      color: var(--neon-yellow);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      cursor: pointer;
+      flex: 1;
+      text-align: center;
+    }
+
+    .btn-sm-arcade:active {
+      background: rgba(255, 230, 0, 0.2);
+    }
+
+    /* Confetti Canvas */
+    #confettiCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* Toast bericht */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #111524;
+      border: 1.5px solid var(--neon-cyan);
+      box-shadow: 0 0 16px rgba(0, 240, 255, 0.4);
+      color: #ffffff;
+      padding: 10px 20px;
+      border-radius: 999px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 10000;
+      white-space: nowrap;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="confettiCanvas"></canvas>
+
+  <div class="app">
+    <!-- Header met Explore 2026 Arcade Logo -->
+    <header>
+      <img src="logo.png" alt="Explore 2026 Arcade Logo" class="app-logo">
+      <div class="subtitle">Explore 2026 • Regio Hollands Midden</div>
+      <h1 class="app-title" style="font-size: 1.25rem; line-height: 1.3; margin-top: 6px;">
+        Ben jij al in de kampvuurkuil geweest??
+      </h1>
+    </header>
+
+    <!-- Hoofd GPS Check Kaart -->
+    <main class="kvk-card" id="kvkCard">
+      <!-- Radar & Kampvuur visualisatie -->
+      <div class="radar-container">
+        <div class="radar-circle c3"></div>
+        <div class="radar-circle c2"></div>
+        <div class="radar-circle c1"></div>
+        <div class="radar-sweep"></div>
+        <div class="fire-icon-wrap" id="fireIcon" title="Kampvuurkuil">🔥</div>
+      </div>
+
+      <!-- Live status & Afstand -->
+      <div class="status-title highlight" id="statusTitle">Locatie peilen...</div>
+      <div id="statusSubtitle" style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 4px;">
+        GPS-toegang controleren voor de kampvuurkuil
+      </div>
+
+      <!-- Grote afstandsbadge -->
+      <div class="distance-badge" id="distanceBadge">
+        <span id="distanceIcon">📡</span>
+        <span id="distanceText">Zoeken naar signaal...</span>
+      </div>
+
+      <!-- Thermometer (Warm/Koud hint) -->
+      <div class="heat-meter-container" id="heatMeterContainer" style="display: none;">
+        <div class="heat-meter-label">
+          <span>Thermometer</span>
+          <span id="heatText" class="heat-hint">Koud... ❄️</span>
+        </div>
+        <div class="heat-meter-bar-bg">
+          <div class="heat-meter-bar-fill" id="heatFill"></div>
+        </div>
+      </div>
+
+      <!-- Extra GPS Nauwkeurigheid & Info -->
+      <div class="meta-info" id="metaInfo">
+        Nauwkeurigheid: <span id="accuracyVal">-</span> • Straal: <span id="radiusVal">35</span>m
+      </div>
+
+      <!-- Foutmelding / Instructies indien GPS uitstaat of geweigerd is -->
+      <div id="alertBox" class="alert-box" style="display: none;">
+        <strong>⚠️ Locatie niet beschikbaar:</strong>
+        <div id="alertMsg" style="margin-top: 4px;"></div>
+      </div>
+
+      <!-- Automatische Countdown bij aankomst -->
+      <div id="countdownBanner" class="countdown-banner" style="display: none;">
+        <span>🚀 Doorsturen naar bestemming over <strong id="countdownSec">3</strong>s...</span>
+        <button type="button" class="btn-cancel-countdown" id="cancelCountdownBtn">Pauzeren</button>
+      </div>
+
+      <!-- Actieknoppen -->
+      <div style="width: 100%; margin-top: 4px;">
+        <!-- Groene actieknop wanneer je binnen bereik bent -->
+        <a id="btnGoTarget" href="#" class="action-btn-main" style="display: none;">
+          🎉 Ga naar Bestemming! 🚀
+        </a>
+
+        <!-- Opnieuw peilen / Handmatig verversen knop -->
+        <button type="button" id="btnRefreshGps" class="action-btn-secondary">
+          📍 Locatie Opnieuw Meten
+        </button>
+      </div>
+    </main>
+  </div>
+
+  <!-- Toast notificatie -->
+  <div id="toast" class="toast">Instellingen opgeslagen!</div>
+
+  <script>
+    /**
+     * Explore 2026 - Ben jij al in de kampvuurkuil geweest??
+     * Geolocation radar & proximity check engine
+     */
+    
+    // Standaardconfiguratie (Het Naaldenveld kampvuurkuil als standaard scoutinglocatie)
+    const DEFAULT_CONFIG = {
+      targetLat: 52.353681,
+      targetLng: 4.570565,
+      radiusMeters: 35,
+      targetUrl: 'https://skenme.nl/qr/scan.php?ID=48dc9395dd',
+      autoRedirectDelaySec: 3
+    };
+
+    const STORAGE_KEY = 'explore_kvk_config';
+
+    // Actieve configuratie initialiseren (URL parameters > LocalStorage > Default)
+    let currentConfig = loadConfig();
+    let currentPosition = null;
+    let watchId = null;
+    let countdownTimer = null;
+    let countdownRemaining = 3;
+    let hasTriggeredSuccess = false;
+
+    // DOM Elementen
+    const elCard = document.getElementById('kvkCard');
+    const elFireIcon = document.getElementById('fireIcon');
+    const elStatusTitle = document.getElementById('statusTitle');
+    const elStatusSubtitle = document.getElementById('statusSubtitle');
+    const elDistanceBadge = document.getElementById('distanceBadge');
+    const elDistanceIcon = document.getElementById('distanceIcon');
+    const elDistanceText = document.getElementById('distanceText');
+    const elHeatContainer = document.getElementById('heatMeterContainer');
+    const elHeatText = document.getElementById('heatText');
+    const elHeatFill = document.getElementById('heatFill');
+    const elAccuracyVal = document.getElementById('accuracyVal');
+    const elRadiusVal = document.getElementById('radiusVal');
+    const elAlertBox = document.getElementById('alertBox');
+    const elAlertMsg = document.getElementById('alertMsg');
+    const elCountdownBanner = document.getElementById('countdownBanner');
+    const elCountdownSec = document.getElementById('countdownSec');
+    const elCancelCountdownBtn = document.getElementById('cancelCountdownBtn');
+    const elBtnGoTarget = document.getElementById('btnGoTarget');
+    const elBtnRefreshGps = document.getElementById('btnRefreshGps');
+    const elToast = document.getElementById('toast');
+
+    // Instellingen formulier elementen
+    const elSettingsToggle = document.getElementById('settingsToggle');
+    const elSettingsBody = document.getElementById('settingsBody');
+    const elToggleArrow = document.getElementById('toggleArrow');
+    const elCfgLat = document.getElementById('cfgLat');
+    const elCfgLng = document.getElementById('cfgLng');
+    const elCfgRadius = document.getElementById('cfgRadius');
+    const elCfgTargetUrl = document.getElementById('cfgTargetUrl');
+    const elBtnSaveConfig = document.getElementById('btnSaveConfig');
+    const elBtnSetHere = document.getElementById('btnSetHere');
+    const elBtnSimulateInside = document.getElementById('btnSimulateInside');
+    const elBtnCopyShareLink = document.getElementById('btnCopyShareLink');
+    const elBtnResetConfig = document.getElementById('btnResetConfig');
+
+    /**
+     * Configuratie inlezen met prioriteiten:
+     * 1. URL Query parameters (?lat=...&lng=...&radius=...&url=...)
+     * 2. Opgeslagen waarden in localStorage
+     * 3. Standaard waarden (DEFAULT_CONFIG)
+     */
+    function loadConfig() {
+      const urlParams = new URLSearchParams(window.location.search);
+      let saved = {};
+      try {
+        saved = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+      } catch (e) {}
+
+      const lat = parseFloat(urlParams.get('lat') || urlParams.get('latitude') || saved.targetLat || DEFAULT_CONFIG.targetLat);
+      const lng = parseFloat(urlParams.get('lng') || urlParams.get('lon') || urlParams.get('longitude') || saved.targetLng || DEFAULT_CONFIG.targetLng);
+      const radius = parseFloat(urlParams.get('radius') || urlParams.get('r') || saved.radiusMeters || DEFAULT_CONFIG.radiusMeters);
+      const target = urlParams.get('url') || urlParams.get('target') || urlParams.get('redirect') || saved.targetUrl || DEFAULT_CONFIG.targetUrl;
+
+      return {
+        targetLat: isNaN(lat) ? DEFAULT_CONFIG.targetLat : lat,
+        targetLng: isNaN(lng) ? DEFAULT_CONFIG.targetLng : lng,
+        radiusMeters: isNaN(radius) ? DEFAULT_CONFIG.radiusMeters : radius,
+        targetUrl: target || DEFAULT_CONFIG.targetUrl,
+        autoRedirectDelaySec: DEFAULT_CONFIG.autoRedirectDelaySec
+      };
+    }
+
+    /**
+     * Toon een tijdelijke melding (toast)
+     */
+    function showToast(message) {
+      elToast.textContent = message;
+      elToast.classList.add('show');
+      setTimeout(() => elToast.classList.remove('show'), 2600);
+    }
+
+    /**
+     * Haversine Formule om de afstand in meters over het aardoppervlak te berekenen
+     */
+    function calculateDistanceMeters(lat1, lon1, lat2, lon2) {
+      const R = 6371e3; // Aardstraal in meters
+      const rad = Math.PI / 180;
+      const dLat = (lat2 - lat1) * rad;
+      const dLon = (lon2 - lon1) * rad;
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * rad) * Math.cos(lat2 * rad) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c;
+    }
+
+    /**
+     * Formatteer meters netjes (bijv. "18 m" of "1.4 km")
+     */
+    function formatDistance(meters) {
+      if (meters < 1000) {
+        return `${Math.round(meters)} meter`;
+      }
+      return `${(meters / 1000).toFixed(2)} km`;
+    }
+
+    /**
+     * Bepaal de 'temperatuur' (warm/koud spelletje richting de kuil)
+     */
+    function getHeatState(distance, radius) {
+      if (distance <= radius) {
+        return { percent: 100, text: 'IN DE KUIL! 🔥🎪', color: 'var(--neon-green)' };
+      }
+      const diff = distance - radius;
+      if (diff <= 25) {
+        return { percent: 85, text: 'Heet! Je ruikt het hout! 🔥', color: 'var(--neon-yellow)' };
+      }
+      if (diff <= 75) {
+        return { percent: 65, text: 'Lekker warm... Je nadert het vuur! 🍂', color: '#ff9900' };
+      }
+      if (diff <= 200) {
+        return { percent: 40, text: 'Frisjes... Loop richting de rook! 🌲', color: 'var(--neon-cyan)' };
+      }
+      return { percent: 15, text: 'IJskoud! Nog een flink eind lopen ❄️', color: '#60a5fa' };
+    }
+
+    /**
+     * Verwerk een bijgewerkte GPS positie
+     */
+    function handlePosition(position) {
+      currentPosition = position;
+      hideAlert();
+
+      const userLat = position.coords.latitude;
+      const userLng = position.coords.longitude;
+      const accuracy = Math.round(position.coords.accuracy || 0);
+
+      elAccuracyVal.textContent = `±${accuracy}m`;
+      elRadiusVal.textContent = Math.round(currentConfig.radiusMeters);
+
+      const distance = calculateDistanceMeters(
+        userLat,
+        userLng,
+        currentConfig.targetLat,
+        currentConfig.targetLng
+      );
+
+      const isInRange = distance <= currentConfig.radiusMeters;
+      updateUI(distance, isInRange, accuracy);
+    }
+
+    /**
+     * Werk alle UI-elementen bij op basis van de berekende afstand
+     */
+    function updateUI(distance, isInRange, accuracy) {
+      const heat = getHeatState(distance, currentConfig.radiusMeters);
+      elHeatContainer.style.display = 'flex';
+      elHeatText.textContent = heat.text;
+      elHeatText.style.color = heat.color;
+      elHeatFill.style.width = `${heat.percent}%`;
+
+      if (isInRange) {
+        // GEARRIVEERD IN DE KAMPVUURKUIL!
+        elCard.classList.add('in-range');
+        elFireIcon.textContent = '🔥';
+        elStatusTitle.textContent = '🔥 JE BENT IN DE KAMPVUURKUIL! 🔥';
+        elStatusTitle.className = 'status-title success';
+        elStatusSubtitle.textContent = `Je staat middenin het bereik (${formatDistance(distance)} van het middelpunt)`;
+        
+        elDistanceBadge.className = 'distance-badge in-range';
+        elDistanceIcon.textContent = '🎪';
+        elDistanceText.textContent = 'Doel bereikt!';
+
+        elBtnGoTarget.href = currentConfig.targetUrl;
+        elBtnGoTarget.style.display = 'inline-flex';
+
+        if (!hasTriggeredSuccess) {
+          hasTriggeredSuccess = true;
+          startConfetti();
+          startRedirectCountdown();
+        }
+      } else {
+        // Nog buiten bereik
+        elCard.classList.remove('in-range');
+        elFireIcon.textContent = '🏕️';
+        elStatusTitle.textContent = 'Nog even doorlopen...';
+        elStatusTitle.className = 'status-title highlight';
+        elStatusSubtitle.textContent = 'Blijf doorlopen tot je bij het kampvuur bent!';
+
+        elDistanceBadge.className = 'distance-badge';
+        elDistanceIcon.textContent = '📍';
+        elDistanceText.textContent = `Nog ${formatDistance(distance)}`;
+
+        elBtnGoTarget.style.display = 'none';
+        stopRedirectCountdown();
+      }
+    }
+
+    /**
+     * Foutafhandeling van de Geolocation API
+     */
+    function handleLocationError(error) {
+      let msg = '';
+      switch (error.code) {
+        case error.PERMISSION_DENIED:
+          msg = 'Locatietoegang is geweigerd. Geef deze browser toestemming voor je locatie via je browser- of toestelinstellingen om de kuil te detecteren.';
+          break;
+        case error.POSITION_UNAVAILABLE:
+          msg = 'GPS-signaal niet beschikbaar. Zorg dat je locatieservices/GPS aanstaan en dat je een open zicht op de hemel hebt.';
+          break;
+        case error.TIMEOUT:
+          msg = 'Het opvragen van de GPS-locatie duurde te lang. Druk hieronder op "Locatie Opnieuw Meten".';
+          break;
+        default:
+          msg = 'Er trad een onbekende fout op bij het bepalen van je locatie (' + error.message + ').';
+      }
+      showAlert(msg);
+      elStatusTitle.textContent = 'GPS Signaal Nodig';
+      elStatusTitle.className = 'status-title';
+      elDistanceText.textContent = 'Locatie onbekend';
+      elHeatContainer.style.display = 'none';
+    }
+
+    function showAlert(msg) {
+      elAlertMsg.textContent = msg;
+      elAlertBox.style.display = 'block';
+    }
+
+    function hideAlert() {
+      elAlertBox.style.display = 'none';
+    }
+
+    /**
+     * Start continue GPS monitoring
+     */
+    function startLocationWatch() {
+      if (!('geolocation' in navigator)) {
+        showAlert('Helaas ondersteunt deze browser geen GPS-geolocatie.');
+        return;
+      }
+
+      elStatusTitle.textContent = 'Locatie peilen...';
+      elStatusTitle.className = 'status-title highlight';
+      elDistanceText.textContent = 'GPS verbinden...';
+
+      const options = {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 3000
+      };
+
+      // Stop eventuele eerdere watch
+      if (watchId !== null) {
+        navigator.geolocation.clearWatch(watchId);
+      }
+
+      // Eerst een directe getCurrentPosition voor snelle feedback
+      navigator.geolocation.getCurrentPosition(handlePosition, handleLocationError, options);
+
+      // Daarna continu monitoren terwijl de scout naar het vuur loopt
+      watchId = navigator.geolocation.watchPosition(handlePosition, handleLocationError, options);
+    }
+
+    /**
+     * Automatische countdown timer om door te sturen naar de doel-URL
+     */
+    function startRedirectCountdown() {
+      countdownRemaining = currentConfig.autoRedirectDelaySec || 3;
+      elCountdownSec.textContent = countdownRemaining;
+      elCountdownBanner.style.display = 'flex';
+
+      clearInterval(countdownTimer);
+      countdownTimer = setInterval(() => {
+        countdownRemaining--;
+        if (countdownRemaining <= 0) {
+          clearInterval(countdownTimer);
+          window.location.href = currentConfig.targetUrl;
+        } else {
+          elCountdownSec.textContent = countdownRemaining;
+        }
+      }, 1000);
+    }
+
+    function stopRedirectCountdown() {
+      clearInterval(countdownTimer);
+      elCountdownBanner.style.display = 'none';
+    }
+
+    // Handmatig annuleren van de countdown
+    elCancelCountdownBtn.addEventListener('click', () => {
+      stopRedirectCountdown();
+      showToast('Automatisch doorsturen gepauzeerd');
+    });
+
+    // Opnieuw GPS peilen
+    elBtnRefreshGps.addEventListener('click', () => {
+      startLocationWatch();
+      showToast('GPS wordt opnieuw gepeild...');
+    });
+
+    /**
+     * Feestelijke confetti animatie op een HTML5 Canvas (vanuit het Explore logo palet)
+     */
+    function startConfetti() {
+      const canvas = document.getElementById('confettiCanvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const colors = ['#00f0ff', '#ff007f', '#ffe600', '#00ff66', '#ffffff'];
+      const particles = [];
+      const particleCount = 75;
+
+      for (let i = 0; i < particleCount; i++) {
+        particles.push({
+          x: canvas.width / 2 + (Math.random() - 0.5) * 60,
+          y: canvas.height / 2 + (Math.random() - 0.5) * 60,
+          vx: (Math.random() - 0.5) * 12,
+          vy: (Math.random() - 1.2) * 14,
+          size: Math.random() * 8 + 4,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          rotation: Math.random() * 360,
+          rotSpeed: (Math.random() - 0.5) * 15,
+          gravity: 0.38,
+          alpha: 1,
+          decay: Math.random() * 0.012 + 0.008
+        });
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let alive = 0;
+
+        particles.forEach(p => {
+          if (p.alpha > 0) {
+            alive++;
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vy += p.gravity;
+            p.rotation += p.rotSpeed;
+            p.alpha -= p.decay;
+
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate((p.rotation * Math.PI) / 180);
+            ctx.fillStyle = p.color;
+            ctx.globalAlpha = Math.max(0, p.alpha);
+            ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.7);
+            ctx.restore();
+          }
+        });
+
+        if (alive > 0) {
+          requestAnimationFrame(animate);
+        } else {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    /**
+     * Beheerpaneel / Instellingen formulier initialiseren
+     */
+    function initSettingsUI() {
+      elCfgLat.value = currentConfig.targetLat;
+      elCfgLng.value = currentConfig.targetLng;
+      elCfgRadius.value = currentConfig.radiusMeters;
+      elCfgTargetUrl.value = currentConfig.targetUrl;
+      elRadiusVal.textContent = Math.round(currentConfig.radiusMeters);
+
+      // Uitklappen / inklappen
+      elSettingsToggle.addEventListener('click', () => {
+        const isHidden = elSettingsBody.style.display === 'none';
+        elSettingsBody.style.display = isHidden ? 'flex' : 'none';
+        elToggleArrow.textContent = isHidden ? '▲' : '▼';
+      });
+
+      // Opslaan naar localStorage
+      elBtnSaveConfig.addEventListener('click', () => {
+        const lat = parseFloat(elCfgLat.value);
+        const lng = parseFloat(elCfgLng.value);
+        const radius = parseFloat(elCfgRadius.value);
+        const target = elCfgTargetUrl.value.trim() || 'index.html';
+
+        if (isNaN(lat) || isNaN(lng) || isNaN(radius)) {
+          alert('Vul geldige getallen in voor coördinaten en straal.');
+          return;
+        }
+
+        currentConfig.targetLat = lat;
+        currentConfig.targetLng = lng;
+        currentConfig.radiusMeters = radius;
+        currentConfig.targetUrl = target;
+
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(currentConfig));
+        } catch (e) {}
+
+        showToast('Instellingen opgeslagen!');
+        if (currentPosition) {
+          handlePosition(currentPosition);
+        } else {
+          startLocationWatch();
+        }
+      });
+
+      // Huidige positie instellen als kampvuurkuil
+      elBtnSetHere.addEventListener('click', () => {
+        if (!currentPosition) {
+          alert('Wacht even tot je huidige GPS-positie is vastgesteld.');
+          return;
+        }
+        elCfgLat.value = currentPosition.coords.latitude.toFixed(6);
+        elCfgLng.value = currentPosition.coords.longitude.toFixed(6);
+        elBtnSaveConfig.click();
+        showToast('📍 Huidige locatie ingesteld als Kampvuurkuil!');
+      });
+
+      // Simuleer direct 'In de Kuil' (ideaal voor testen zonder naar het bos te lopen)
+      elBtnSimulateInside.addEventListener('click', () => {
+        const fakePos = {
+          coords: {
+            latitude: currentConfig.targetLat,
+            longitude: currentConfig.targetLng,
+            accuracy: 5
+          }
+        };
+        handlePosition(fakePos);
+        showToast('🎮 Testmodus geactiveerd: Simuleert positie in KVK');
+      });
+
+      // Deelbare QR/URL link kopiëren met de ingestelde parameters
+      elBtnCopyShareLink.addEventListener('click', () => {
+        const url = new URL(window.location.href);
+        url.searchParams.set('lat', currentConfig.targetLat);
+        url.searchParams.set('lng', currentConfig.targetLng);
+        url.searchParams.set('radius', currentConfig.radiusMeters);
+        url.searchParams.set('url', currentConfig.targetUrl);
+
+        navigator.clipboard.writeText(url.toString())
+          .then(() => showToast('🔗 Deelbare link gekopieerd!'))
+          .catch(() => prompt('Kopieer deze link:', url.toString()));
+      });
+
+      // Reset naar standaardinstellingen
+      elBtnResetConfig.addEventListener('click', () => {
+        if (confirm('Wil je de coördinaten resetten naar de standaardwaarden?')) {
+          try {
+            localStorage.removeItem(STORAGE_KEY);
+          } catch (e) {}
+          currentConfig = { ...DEFAULT_CONFIG };
+          initSettingsUI();
+          showToast('Coördinaten hersteld naar standaard');
+          if (currentPosition) handlePosition(currentPosition);
+        }
+      });
+    }
+
+    // Start initialisatie zodra de DOM klaar is
+    document.addEventListener('DOMContentLoaded', () => {
+      initSettingsUI();
+      startLocationWatch();
+    });
+  </script>
+</body>
+</html>
