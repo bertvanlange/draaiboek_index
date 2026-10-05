@@ -1,8 +1,3 @@
-<!-- moge bne jij al in de kvk geeweest -->
-
-<!-- ask for your location checks if it is in range of a set location. if so go to a url -->
-<!-- meanwile show a nice page wiht th explore logo and the question " ben jij al in de kampvuurkuil geweest??"  -->
-
 <!DOCTYPE html>
 <html lang="nl">
 <head>
@@ -10,13 +5,43 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Explore 2026 - Ben jij al in de kampvuurkuil geweest??</title>
   <meta name="description" content="Check of je al in de kampvuurkuil bent bij Explore 2026!">
-  <link rel="icon" type="image/png" href="logo.png">
+  <link rel="icon" type="image/png" href="../logo.png">
   
   <!-- Explore 2026 Arcade Thema Basis -->
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="../style.css">
 
   <style>
     /* Aanvullende stijlen specifiek voor de Kampvuurkuil GPS Check */
+    .nav-top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      margin-bottom: 4px;
+    }
+
+    .nav-back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--neon-cyan);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      padding: 6px 12px;
+      background: rgba(0, 240, 255, 0.1);
+      border: 1px solid rgba(0, 240, 255, 0.35);
+      border-radius: 8px;
+      transition: all 0.15s ease;
+    }
+
+    .nav-back-link:active {
+      background: rgba(0, 240, 255, 0.25);
+      transform: scale(0.97);
+    }
+
     .kvk-card {
       background: var(--card);
       border: 1.5px solid var(--card-border);
@@ -426,9 +451,19 @@
   <canvas id="confettiCanvas"></canvas>
 
   <div class="app">
+    <!-- Bovenbalk met teruglink naar menu -->
+    <div class="nav-top-bar">
+      <a href="quest_hunt_menu.html" class="nav-back-link">
+        ⬅ Quest Hunt Menu
+      </a>
+      <a href="heb_jij_de_morse_code_all.html" class="nav-back-link" style="color: var(--neon-pink); border-color: rgba(255, 0, 127, 0.35); background: rgba(255, 0, 127, 0.1);">
+        📻 Morse Missie
+      </a>
+    </div>
+
     <!-- Header met Explore 2026 Arcade Logo -->
     <header>
-      <img src="logo.png" alt="Explore 2026 Arcade Logo" class="app-logo">
+      <img src="../logo.png" alt="Explore 2026 Arcade Logo" class="app-logo">
       <div class="subtitle">Explore 2026 • Regio Hollands Midden</div>
       <h1 class="app-title" style="font-size: 1.25rem; line-height: 1.3; margin-top: 6px;">
         Ben jij al in de kampvuurkuil geweest??
@@ -499,6 +534,7 @@
         </button>
       </div>
     </main>
+
   </div>
 
   <!-- Toast notificatie -->
@@ -596,6 +632,7 @@
      * Toon een tijdelijke melding (toast)
      */
     function showToast(message) {
+      if (!elToast) return;
       elToast.textContent = message;
       elToast.classList.add('show');
       setTimeout(() => elToast.classList.remove('show'), 2600);
@@ -826,6 +863,7 @@
      */
     function startConfetti() {
       const canvas = document.getElementById('confettiCanvas');
+      if (!canvas) return;
       const ctx = canvas.getContext('2d');
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
@@ -887,6 +925,8 @@
      * Beheerpaneel / Instellingen formulier initialiseren
      */
     function initSettingsUI() {
+      if (!elSettingsToggle || !elCfgLat) return;
+
       elCfgLat.value = currentConfig.targetLat;
       elCfgLng.value = currentConfig.targetLng;
       elCfgRadius.value = currentConfig.radiusMeters;
@@ -905,7 +945,7 @@
         const lat = parseFloat(elCfgLat.value);
         const lng = parseFloat(elCfgLng.value);
         const radius = parseFloat(elCfgRadius.value);
-        const target = elCfgTargetUrl.value.trim() || 'index.html';
+        const target = elCfgTargetUrl.value.trim() || 'quest_hunt_menu.html';
 
         if (isNaN(lat) || isNaN(lng) || isNaN(radius)) {
           alert('Vul geldige getallen in voor coördinaten en straal.');

@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Explore 2026 - Kraak het Sudoku Slot</title>
+  <meta name="description" content="Los de deels ingevulde Sudoku op, ontdek de 4 sleutelgetallen en open het cijferslot voor Explore 2026!">
+  <link rel="icon" type="image/png" href="../logo.png">
+  
+  <!-- Explore 2026 Arcade Thema Basis -->
+  <link rel="stylesheet" href="../style.css">
+
+  <style>
+    /* Bovenste navigatiebalk */
+    .nav-top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      margin-bottom: 4px;
+    }
+
+    .nav-back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--neon-cyan);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      padding: 6px 12px;
+      background: rgba(0, 240, 255, 0.1);
+      border: 1px solid rgba(0, 240, 255, 0.35);
+      border-radius: 8px;
+      transition: all 0.15s ease;
+    }
+
+    .nav-back-link:active {
+      background: rgba(0, 240, 255, 0.25);
+      transform: scale(0.97);
+    }
+
+    /* Hoofd Sudoku Card */
+    .sudoku-card {
+      background: var(--card);
+      border: 1.5px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 18px 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .sudoku-card.unlocked-card {
+      border-color: var(--neon-green);
+      box-shadow: 0 0 25px rgba(0, 255, 102, 0.45), inset 0 0 15px rgba(0, 255, 102, 0.15);
+      animation: pulseUnlocked 2s infinite alternate;
+    }
+
+    @keyframes pulseUnlocked {
+      0% { box-shadow: 0 0 16px rgba(0, 255, 102, 0.3); }
+      100% { box-shadow: 0 0 28px rgba(0, 255, 102, 0.6); }
+    }
+
+    /* Uitleg badge */
+    .instruction-badge {
+      background: rgba(0, 240, 255, 0.08);
+      border: 1px solid rgba(0, 240, 255, 0.25);
+      border-radius: 10px;
+      padding: 10px 14px;
+      margin: 8px 0 14px;
+      font-size: 0.82rem;
+      line-height: 1.4;
+      color: var(--text-muted);
+      text-align: left;
+      width: 100%;
+    }
+
+    .instruction-badge strong {
+      color: var(--neon-yellow);
+    }
+
+    /* Sudoku Board Layout */
+    .sudoku-board-container {
+      width: 100%;
+      max-width: 360px;
+      margin: 0 auto 14px;
+      aspect-ratio: 1 / 1;
+      display: grid;
+      grid-template-columns: repeat(9, 1fr);
+      grid-template-rows: repeat(9, 1fr);
+      background: #090c17;
+      border: 2.5px solid var(--neon-cyan);
+      border-radius: 10px;
+      box-shadow: 0 0 16px rgba(0, 240, 255, 0.35);
+      overflow: hidden;
+      user-select: none;
+    }
+
+    .sudoku-cell {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #ffffff;
+      border-right: 1px solid rgba(255, 255, 255, 0.12);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      cursor: pointer;
+      position: relative;
+      transition: background 0.12s ease, transform 0.1s ease;
+    }
+
+    /* 3x3 blok scheidingen */
+    .sudoku-cell:nth-child(3n) {
+      border-right: 2px solid var(--neon-cyan);
+    }
+    .sudoku-cell:nth-child(9n) {
+      border-right: none;
+    }
+    .border-b-thick {
+      border-bottom: 2px solid var(--neon-cyan) !important;
+    }
+
+    /* Pre-filled vaste getallen */
+    .sudoku-cell.given {
+      color: #64748b;
+      background: rgba(255, 255, 255, 0.02);
+      cursor: default;
+    }
+
+    /* Geselecteerde cel */
+    .sudoku-cell.selected {
+      background: rgba(0, 240, 255, 0.25) !important;
+      outline: 2px solid var(--neon-cyan);
+      z-index: 5;
+    }
+
+    /* De 4 Speciale Slot Cellen! */
+    .sudoku-cell.lock-cell {
+      background: rgba(255, 230, 0, 0.12);
+      border-color: rgba(255, 230, 0, 0.4);
+      color: var(--neon-yellow);
+      font-weight: 900;
+    }
+
+    .sudoku-cell.lock-cell::after {
+      content: attr(data-lock-idx);
+      position: absolute;
+      top: 1px;
+      right: 2px;
+      font-size: 0.55rem;
+      font-weight: 900;
+      color: var(--neon-yellow);
+      text-shadow: 0 0 4px var(--neon-yellow);
+      line-height: 1;
+    }
+
+    .sudoku-cell.lock-cell.filled {
+      color: var(--neon-yellow);
+      text-shadow: 0 0 8px rgba(255, 230, 0, 0.6);
+    }
+
+    /* On-Screen Keypad voor mobiel */
+    .keypad-container {
+      width: 100%;
+      max-width: 360px;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .btn-keypad {
+      background: #111526;
+      border: 1.5px solid rgba(0, 240, 255, 0.35);
+      border-radius: 8px;
+      color: #ffffff;
+      font-size: 1.15rem;
+      font-weight: 900;
+      padding: 10px 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+      transition: all 0.12s ease;
+    }
+
+    .btn-keypad:active {
+      background: rgba(0, 240, 255, 0.25);
+      transform: scale(0.95);
+      border-color: var(--neon-cyan);
+    }
+
+    .btn-keypad.btn-erase {
+      border-color: rgba(255, 0, 127, 0.4);
+      color: var(--neon-pink);
+    }
+
+    /* Het Combinatieslot Paneel */
+    .lock-panel {
+      width: 100%;
+      background: #090c17;
+      border: 2px solid var(--neon-yellow);
+      border-radius: var(--radius);
+      padding: 16px 14px;
+      box-shadow: 0 0 18px rgba(255, 230, 0, 0.25);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .lock-panel-header {
+      font-size: 0.9rem;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--neon-yellow);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* De 4 cijfer-dials van het slot */
+    .lock-dials-row {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .lock-dial {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .lock-dial-label {
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: var(--neon-yellow);
+    }
+
+    .lock-digit-input {
+      width: 52px;
+      height: 56px;
+      background: #111526;
+      border: 2px solid var(--neon-cyan);
+      border-radius: 10px;
+      font-size: 1.6rem;
+      font-weight: 900;
+      color: #ffffff;
+      text-align: center;
+      outline: none;
+      box-shadow: 0 0 10px rgba(0, 240, 255, 0.25);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .lock-digit-input:focus {
+      border-color: var(--neon-pink);
+      box-shadow: 0 0 14px rgba(255, 0, 127, 0.5);
+    }
+
+    /* Ontgrendel knop */
+    .btn-unlock-slot {
+      width: 100%;
+      background: linear-gradient(135deg, var(--neon-yellow) 0%, #e6a800 100%);
+      color: #05070e;
+      border: none;
+      border-radius: var(--radius);
+      padding: 15px;
+      font-size: 1.05rem;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 0 18px rgba(255, 230, 0, 0.4);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: transform 0.15s ease, filter 0.15s ease;
+    }
+
+    .btn-unlock-slot:active {
+      transform: scale(0.98);
+      filter: brightness(1.1);
+    }
+
+    /* Succes & Foutmeldingen */
+    .alert-box-sudoku {
+      background: rgba(255, 0, 127, 0.12);
+      border: 1.5px solid var(--neon-pink);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      color: #ffffff;
+      font-size: 0.88rem;
+      line-height: 1.45;
+      text-align: center;
+      margin-top: 12px;
+      width: 100%;
+    }
+
+    .alert-box-sudoku.shake {
+      animation: shakeAnim 0.45s ease-in-out;
+    }
+
+    @keyframes shakeAnim {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-8px); }
+      40%, 80% { transform: translateX(8px); }
+    }
+
+    .success-box-sudoku {
+      background: rgba(0, 255, 102, 0.12);
+      border: 1.5px solid var(--neon-green);
+      border-radius: var(--radius);
+      padding: 18px 16px;
+      color: #ffffff;
+      text-align: center;
+      margin-top: 12px;
+      width: 100%;
+      box-shadow: 0 0 20px rgba(0, 255, 102, 0.35);
+    }
+
+    .action-btn-main {
+      width: 100%;
+      background: linear-gradient(135deg, var(--neon-green) 0%, #00b347 100%);
+      color: #04080e;
+      border: none;
+      border-radius: var(--radius);
+      padding: 16px;
+      font-size: 1.05rem;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 0 20px rgba(0, 255, 102, 0.45);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-decoration: none;
+      margin-top: 12px;
+      transition: transform 0.15s ease, filter 0.15s ease;
+    }
+
+    .action-btn-main:active {
+      transform: scale(0.98);
+      filter: brightness(1.1);
+    }
+
+    /* Countdown Banner */
+    .countdown-banner {
+      background: rgba(0, 255, 102, 0.12);
+      border: 1px dashed var(--neon-green);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: #ffffff;
+      font-size: 0.88rem;
+      font-weight: 700;
+      margin-top: 12px;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .btn-cancel-countdown {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: #cbd5e1;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      cursor: pointer;
+    }
+
+    /* Collapsible Settings / Drawer */
+    .settings-panel {
+      background: #0b0e1b;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-top: 12px;
+      width: 100%;
+    }
+
+    .settings-header {
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      user-select: none;
+    }
+
+    .settings-header:hover {
+      color: #ffffff;
+    }
+
+    .settings-body {
+      padding: 14px 16px 18px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      text-align: left;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .form-group label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--neon-cyan);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .form-group input {
+      background: #111524;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 9px 12px;
+      color: #ffffff;
+      font-size: 0.88rem;
+      outline: none;
+    }
+
+    .form-group input:focus {
+      border-color: var(--neon-cyan);
+      box-shadow: var(--glow-cyan);
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn-sm-arcade {
+      background: #151b2e;
+      border: 1px solid var(--neon-yellow);
+      color: var(--neon-yellow);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      cursor: pointer;
+      flex: 1;
+      text-align: center;
+    }
+
+    .btn-sm-arcade:active {
+      background: rgba(255, 230, 0, 0.2);
+    }
+
+    /* Confetti Canvas */
+    #confettiCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #111524;
+      border: 1.5px solid var(--neon-cyan);
+      box-shadow: 0 0 16px rgba(0, 240, 255, 0.4);
+      color: #ffffff;
+      padding: 10px 20px;
+      border-radius: 999px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 10000;
+      white-space: nowrap;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="confettiCanvas"></canvas>
+
+  <div class="app">
+    <!-- Bovenbalk met teruglink naar menu -->
+    <div class="nav-top-bar">
+      <a href="quest_hunt_menu.html" class="nav-back-link">
+        ⬅ Quest Hunt Menu
+      </a>
+      <span style="font-size: 0.75rem; font-weight: 800; color: var(--neon-yellow); letter-spacing: 0.05em;">
+        ★ MISSIE 3
+      </span>
+    </div>
+
+    <!-- Header met Explore 2026 Arcade Logo -->
+    <header>
+      <img src="../logo.png" alt="Explore 2026 Arcade Logo" class="app-logo">
+      <div class="subtitle">Explore 2026 • Regio Hollands Midden</div>
+      <h1 class="app-title" style="font-size: 1.25rem; line-height: 1.3; margin-top: 6px;">
+        Kraak het Sudoku Slot
+      </h1>
+    </header>
+
+    <!-- Hoofd Puzzel Kaart -->
+    <main class="sudoku-card" id="sudokuCard">
+      <!-- Instructie banner -->
+      <div class="instruction-badge">
+        Los de Sudoku op en vind de getallen in de 4 gemarkeerde <strong>gouden slot-vakjes (①, ②, ③, ④)</strong>. Vul deze 4 cijfers in om het cijferslot te openen!
+      </div>
+
+      <!-- Het 9x9 Sudoku Rooster -->
+      <div class="sudoku-board-container" id="sudokuBoard"></div>
+
+      <!-- Touch Keypad 1-9 & Wissen -->
+      <div class="keypad-container">
+        <button type="button" class="btn-keypad" onclick="handleKeypadInput(1)">1</button>
+        <button type="button" class="btn-keypad" onclick="handleKeypadInput(2)">2</button>
+        <button type="button" class="btn-keypad" onclick="handleKeypadInput(3)">3</button>
+        <button type="button" class="btn-keypad" onclick="handleKeypadInput(4)">4</button>
+        <button type="button" class="btn-keypad" onclick="handleKeypadInput(5)">5</button>
+        <button type="button" class="btn-keypad" onclick="handleKeypadInput(6)">6</button>
+        <button type="button" class="btn-keypad" onclick="handleKeypadInput(7)">7</button>
+        <button type="button" class="btn-keypad" onclick="handleKeypadInput(8)">8</button>
+        <button type="button" class="btn-keypad" onclick="handleKeypadInput(9)">9</button>
+        <button type="button" class="btn-keypad btn-erase" onclick="handleKeypadInput(0)" title="Cel wissen">⌫</button>
+      </div>
+
+      <!-- Het Cijferslot Paneel -->
+      <div class="lock-panel" id="lockPanel">
+        <div class="lock-panel-header">
+          <span id="lockStatusIcon">🔒</span>
+          <span>4-CIJFERIG COMBINATIESLOT</span>
+        </div>
+
+        <form id="lockForm" class="lock-dials-row" onsubmit="return false;">
+          <div class="lock-dial">
+            <span class="lock-dial-label">Vak ①</span>
+            <input type="text" id="lockDigit0" class="lock-digit-input" maxlength="1" inputmode="numeric" pattern="[1-9]" autocomplete="off">
+          </div>
+          <div class="lock-dial">
+            <span class="lock-dial-label">Vak ②</span>
+            <input type="text" id="lockDigit1" class="lock-digit-input" maxlength="1" inputmode="numeric" pattern="[1-9]" autocomplete="off">
+          </div>
+          <div class="lock-dial">
+            <span class="lock-dial-label">Vak ③</span>
+            <input type="text" id="lockDigit2" class="lock-digit-input" maxlength="1" inputmode="numeric" pattern="[1-9]" autocomplete="off">
+          </div>
+          <div class="lock-dial">
+            <span class="lock-dial-label">Vak ④</span>
+            <input type="text" id="lockDigit3" class="lock-digit-input" maxlength="1" inputmode="numeric" pattern="[1-9]" autocomplete="off">
+          </div>
+        </form>
+
+        <button type="button" id="btnUnlock" class="btn-unlock-slot">
+          🔓 Open Cijferslot
+        </button>
+      </div>
+
+      <!-- Foutmelding bij onjuiste combinatie -->
+      <div id="alertBox" class="alert-box-sudoku" style="display: none;">
+        <strong>⚠️ Helaas, die combinatie past niet!</strong>
+        <div style="margin-top: 4px; font-size: 0.82rem; color: #cbd5e1;">
+          Controleer de getallen in de 4 gemarkeerde vakjes ①, ②, ③ en ④ van de Sudoku.
+        </div>
+      </div>
+
+      <!-- Succesmelding bij goed antwoord -->
+      <div id="successBox" class="success-box-sudoku" style="display: none;">
+        <h2 style="font-size: 1.25rem; font-weight: 900; color: var(--neon-green); margin-bottom: 6px;">
+          🎉 SLOT MET SUCCES ONTGRENDELD! 🎉
+        </h2>
+        <p style="font-size: 0.95rem; color: #ffffff;">
+          Geweldig speur- en rekenwerk! De kluiscombinatie is gekraakt!
+        </p>
+      </div>
+
+      <!-- Automatische Countdown bij correct antwoord -->
+      <div id="countdownBanner" class="countdown-banner" style="display: none;">
+        <span>🚀 Doorsturen naar bestemming over <strong id="countdownSec">3</strong>s...</span>
+        <button type="button" class="btn-cancel-countdown" id="cancelCountdownBtn">Pauzeren</button>
+      </div>
+
+      <!-- Directe bestemmingsknop na succes -->
+      <a id="btnGoTarget" href="#" class="action-btn-main" style="display: none;">
+        🎉 Ga naar Bestemming! 🚀
+      </a>
+    </main>
+  </div>
+
+  <!-- Toast notificatie -->
+  <div id="toast" class="toast">Instellingen opgeslagen!</div>
+
+  <script>
+    /**
+     * Explore 2026 - Kraak het Sudoku Slot
+     * 9x9 Sudoku Puzzle Engine with 4-Digit Mystery Lock
+     */
+
+    // Deels ingevulde Sudoku (0 = lege cel)
+    const INITIAL_GRID = [
+      [5, 3, 0, 0, 7, 0, 0, 0, 0],
+      [6, 0, 0, 1, 9, 5, 0, 0, 0],
+      [0, 9, 8, 0, 0, 0, 0, 6, 0],
+      [8, 0, 0, 0, 6, 0, 0, 0, 3],
+      [4, 0, 0, 8, 0, 3, 0, 0, 1],
+      [7, 0, 0, 0, 2, 0, 0, 0, 6],
+      [0, 6, 0, 0, 0, 0, 2, 8, 0],
+      [0, 0, 0, 4, 1, 9, 0, 0, 5],
+      [0, 0, 0, 0, 8, 0, 0, 7, 9]
+    ];
+
+    // De 4 speciale slotposities: (rij, kolom) -> opgeloste waarden zijn: [4, 5, 2, 9]
+    const LOCK_CELLS = [
+      { r: 0, c: 2, label: '①', defaultVal: '4' },
+      { r: 4, c: 4, label: '②', defaultVal: '5' },
+      { r: 3, c: 7, label: '③', defaultVal: '2' },
+      { r: 6, c: 0, label: '④', defaultVal: '9' }
+    ];
+
+    const DEFAULT_CONFIG = {
+      targetCode: '4529',
+      targetUrl: 'https://skenme.nl/qr/scan.php?ID=ac771146f9',
+      autoRedirectDelaySec: 3
+    };
+
+    const STORAGE_KEY = 'explore_sudoku_config';
+
+    let currentConfig = loadConfig();
+    let userGrid = JSON.parse(JSON.stringify(INITIAL_GRID));
+    let selectedCell = null;
+    let countdownTimer = null;
+    let countdownRemaining = 3;
+    let hasTriggeredSuccess = false;
+
+    // DOM Elementen
+    const elSudokuBoard = document.getElementById('sudokuBoard');
+    const elSudokuCard = document.getElementById('sudokuCard');
+    const elLockStatusIcon = document.getElementById('lockStatusIcon');
+    const elBtnUnlock = document.getElementById('btnUnlock');
+    const elAlertBox = document.getElementById('alertBox');
+    const elSuccessBox = document.getElementById('successBox');
+    const elCountdownBanner = document.getElementById('countdownBanner');
+    const elCountdownSec = document.getElementById('countdownSec');
+    const elCancelCountdownBtn = document.getElementById('cancelCountdownBtn');
+    const elBtnGoTarget = document.getElementById('btnGoTarget');
+    const elToast = document.getElementById('toast');
+
+    const lockInputs = [
+      document.getElementById('lockDigit0'),
+      document.getElementById('lockDigit1'),
+      document.getElementById('lockDigit2'),
+      document.getElementById('lockDigit3')
+    ];
+
+    // Settings elementen
+    const elSettingsToggle = document.getElementById('settingsToggle');
+    const elSettingsBody = document.getElementById('settingsBody');
+    const elToggleArrow = document.getElementById('toggleArrow');
+    const elCfgTargetCode = document.getElementById('cfgTargetCode');
+    const elCfgTargetUrl = document.getElementById('cfgTargetUrl');
+    const elBtnSaveConfig = document.getElementById('btnSaveConfig');
+    const elBtnSimulateCorrect = document.getElementById('btnSimulateCorrect');
+    const elBtnCopyShareLink = document.getElementById('btnCopyShareLink');
+    const elBtnResetConfig = document.getElementById('btnResetConfig');
+
+    /**
+     * Configuratie inlezen: URL parameters > LocalStorage > Default
+     */
+    function loadConfig() {
+      const urlParams = new URLSearchParams(window.location.search);
+      let saved = {};
+      try {
+        saved = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+      } catch (e) {}
+
+      const code = (urlParams.get('code') || urlParams.get('lock') || saved.targetCode || DEFAULT_CONFIG.targetCode).trim();
+      const target = urlParams.get('url') || urlParams.get('target') || saved.targetUrl || DEFAULT_CONFIG.targetUrl;
+
+      return {
+        targetCode: code || DEFAULT_CONFIG.targetCode,
+        targetUrl: target || DEFAULT_CONFIG.targetUrl,
+        autoRedirectDelaySec: DEFAULT_CONFIG.autoRedirectDelaySec
+      };
+    }
+
+    function showToast(message) {
+      if (!elToast) return;
+      elToast.textContent = message;
+      elToast.classList.add('show');
+      setTimeout(() => elToast.classList.remove('show'), 2600);
+    }
+
+    /**
+     * Sudoku Bord Opbouwen
+     */
+    function renderBoard() {
+      elSudokuBoard.innerHTML = '';
+
+      for (let r = 0; r < 9; r++) {
+        for (let c = 0; c < 9; c++) {
+          const cell = document.createElement('div');
+          cell.className = 'sudoku-cell';
+          cell.dataset.r = r;
+          cell.dataset.c = c;
+
+          // 3x3 blok onderrand
+          if (r === 2 || r === 5) {
+            cell.classList.add('border-b-thick');
+          }
+
+          // Check of dit een van de 4 speciale slotposities is
+          const lockIdx = LOCK_CELLS.findIndex(item => item.r === r && item.c === c);
+          if (lockIdx !== -1) {
+            cell.classList.add('lock-cell');
+            cell.setAttribute('data-lock-idx', LOCK_CELLS[lockIdx].label);
+          }
+
+          const givenVal = INITIAL_GRID[r][c];
+          if (givenVal !== 0) {
+            cell.classList.add('given');
+            cell.textContent = givenVal;
+          } else {
+            const userVal = userGrid[r][c];
+            if (userVal !== 0) {
+              cell.textContent = userVal;
+              if (lockIdx !== -1) cell.classList.add('filled');
+            }
+
+            // Interactie: cel aantikken om te selecteren
+            cell.addEventListener('click', () => {
+              selectCell(r, c);
+            });
+          }
+
+          elSudokuBoard.appendChild(cell);
+        }
+      }
+    }
+
+    function selectCell(r, c) {
+      if (INITIAL_GRID[r][c] !== 0) return; // Gegeven cel kan niet worden aangepast
+
+      document.querySelectorAll('.sudoku-cell.selected').forEach(el => {
+        el.classList.remove('selected');
+      });
+
+      selectedCell = { r, c };
+      const el = document.querySelector(`.sudoku-cell[data-r="${r}"][data-c="${c}"]`);
+      if (el) el.classList.add('selected');
+    }
+
+    /**
+     * Invoer verwerken via Keypad of Fysiek toetsenbord
+     */
+    function handleKeypadInput(val) {
+      if (!selectedCell) {
+        // Zoek eerste lege bewerkbare slot-cel als hint
+        selectCell(LOCK_CELLS[0].r, LOCK_CELLS[0].c);
+        if (!selectedCell) return;
+      }
+
+      const { r, c } = selectedCell;
+      if (INITIAL_GRID[r][c] !== 0) return;
+
+      userGrid[r][c] = val; // 0 = leeg
+
+      // Werk specifieke cel in DOM bij
+      const el = document.querySelector(`.sudoku-cell[data-r="${r}"][data-c="${c}"]`);
+      if (el) {
+        el.textContent = val === 0 ? '' : val;
+        if (el.classList.contains('lock-cell')) {
+          el.classList.toggle('filled', val !== 0);
+        }
+      }
+
+      // Synchroniseer direct met het cijferslot indien het een slot-vakje is!
+      const lockIdx = LOCK_CELLS.findIndex(item => item.r === r && item.c === c);
+      if (lockIdx !== -1) {
+        lockInputs[lockIdx].value = val === 0 ? '' : val;
+      }
+    }
+
+    // Fysiek toetsenbord support voor desktop / tablets
+    window.addEventListener('keydown', (e) => {
+      if (e.target.classList.contains('lock-digit-input')) return; // Behandel in inputs zelf
+      if (e.key >= '1' && e.key <= '9') {
+        handleKeypadInput(parseInt(e.key, 10));
+      } else if (e.key === 'Backspace' || e.key === 'Delete' || e.key === '0') {
+        handleKeypadInput(0);
+      }
+    });
+
+    /**
+     * Cijferslot Dials Setup & Navigatie
+     */
+    lockInputs.forEach((input, idx) => {
+      // Automatisch naar volgend vakje springen bij typen
+      input.addEventListener('input', (e) => {
+        const val = input.value.replace(/[^1-9]/g, '');
+        input.value = val.slice(-1);
+
+        if (input.value) {
+          // Sync terug naar Sudoku rooster!
+          const { r, c } = LOCK_CELLS[idx];
+          userGrid[r][c] = parseInt(input.value, 10);
+          const cellEl = document.querySelector(`.sudoku-cell[data-r="${r}"][data-c="${c}"]`);
+          if (cellEl) {
+            cellEl.textContent = input.value;
+            cellEl.classList.add('filled');
+          }
+
+          if (idx < 3) {
+            lockInputs[idx + 1].focus();
+          }
+        }
+      });
+
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace' && !input.value && idx > 0) {
+          lockInputs[idx - 1].focus();
+        }
+      });
+    });
+
+    /**
+     * Slot Ontgrendelen & Verificatie
+     */
+    function attemptUnlock() {
+      const enteredCode = lockInputs.map(input => input.value.trim()).join('');
+
+      if (enteredCode.length < 4) {
+        showToast('⚠️ Vul alle 4 de cijfers van het slot in!');
+        const emptyIdx = lockInputs.findIndex(i => !i.value.trim());
+        if (emptyIdx !== -1) lockInputs[emptyIdx].focus();
+        return;
+      }
+
+      if (enteredCode === currentConfig.targetCode) {
+        handleSuccess();
+      } else {
+        handleFailure();
+      }
+    }
+
+    function handleSuccess() {
+      elAlertBox.style.display = 'none';
+      elSuccessBox.style.display = 'block';
+      elSudokuCard.classList.add('unlocked-card');
+      elLockStatusIcon.textContent = '🔓';
+      elBtnUnlock.textContent = '✅ Slot Geopend!';
+      elBtnUnlock.style.background = 'linear-gradient(135deg, var(--neon-green) 0%, #00b347 100%)';
+      elBtnUnlock.style.color = '#04080e';
+
+      elBtnGoTarget.href = currentConfig.targetUrl;
+      elBtnGoTarget.style.display = 'inline-flex';
+
+      if (!hasTriggeredSuccess) {
+        hasTriggeredSuccess = true;
+        startConfetti();
+        startRedirectCountdown();
+      }
+    }
+
+    function handleFailure() {
+      elAlertBox.style.display = 'block';
+      elAlertBox.classList.remove('shake');
+      void elAlertBox.offsetWidth;
+      elAlertBox.classList.add('shake');
+    }
+
+    elBtnUnlock.addEventListener('click', attemptUnlock);
+
+    /**
+     * Countdown naar Bestemming
+     */
+    function startRedirectCountdown() {
+      countdownRemaining = currentConfig.autoRedirectDelaySec || 3;
+      elCountdownSec.textContent = countdownRemaining;
+      elCountdownBanner.style.display = 'flex';
+
+      clearInterval(countdownTimer);
+      countdownTimer = setInterval(() => {
+        countdownRemaining--;
+        if (countdownRemaining <= 0) {
+          clearInterval(countdownTimer);
+          window.location.href = currentConfig.targetUrl;
+        } else {
+          elCountdownSec.textContent = countdownRemaining;
+        }
+      }, 1000);
+    }
+
+    function stopRedirectCountdown() {
+      clearInterval(countdownTimer);
+      elCountdownBanner.style.display = 'none';
+    }
+
+    elCancelCountdownBtn.addEventListener('click', () => {
+      stopRedirectCountdown();
+      showToast('Automatisch doorsturen gepauzeerd');
+    });
+
+    /**
+     * Confetti Effect
+     */
+    function startConfetti() {
+      const canvas = document.getElementById('confettiCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const colors = ['#00f0ff', '#ff007f', '#ffe600', '#00ff66', '#ffffff'];
+      const particles = [];
+      const particleCount = 80;
+
+      for (let i = 0; i < particleCount; i++) {
+        particles.push({
+          x: canvas.width / 2 + (Math.random() - 0.5) * 60,
+          y: canvas.height / 2 + (Math.random() - 0.5) * 60,
+          vx: (Math.random() - 0.5) * 12,
+          vy: (Math.random() - 1.2) * 14,
+          size: Math.random() * 8 + 4,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          rotation: Math.random() * 360,
+          rotSpeed: (Math.random() - 0.5) * 15,
+          gravity: 0.38,
+          alpha: 1,
+          decay: Math.random() * 0.012 + 0.008
+        });
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let alive = 0;
+
+        particles.forEach(p => {
+          if (p.alpha > 0) {
+            alive++;
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vy += p.gravity;
+            p.rotation += p.rotSpeed;
+            p.alpha -= p.decay;
+
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate((p.rotation * Math.PI) / 180);
+            ctx.fillStyle = p.color;
+            ctx.globalAlpha = Math.max(0, p.alpha);
+            ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.7);
+            ctx.restore();
+          }
+        });
+
+        if (alive > 0) {
+          requestAnimationFrame(animate);
+        } else {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    /**
+     * UI & Settings Initialisatie
+     */
+    function initUI() {
+      renderBoard();
+
+      // Settings toggle
+      elSettingsToggle.addEventListener('click', () => {
+        const isHidden = elSettingsBody.style.display === 'none';
+        elSettingsBody.style.display = isHidden ? 'flex' : 'none';
+        elToggleArrow.textContent = isHidden ? '▲' : '▼';
+      });
+
+      elCfgTargetCode.value = currentConfig.targetCode;
+      elCfgTargetUrl.value = currentConfig.targetUrl;
+
+      // Opslaan instellingen
+      elBtnSaveConfig.addEventListener('click', () => {
+        const code = elCfgTargetCode.value.trim() || '4529';
+        const url = elCfgTargetUrl.value.trim() || DEFAULT_CONFIG.targetUrl;
+
+        currentConfig.targetCode = code;
+        currentConfig.targetUrl = url;
+
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(currentConfig));
+        } catch (e) {}
+
+        showToast('Instellingen opgeslagen!');
+      });
+
+      // Simuleer juiste code
+      elBtnSimulateCorrect.addEventListener('click', () => {
+        const digits = currentConfig.targetCode.split('');
+        digits.forEach((d, idx) => {
+          if (lockInputs[idx]) {
+            lockInputs[idx].value = d;
+            const { r, c } = LOCK_CELLS[idx];
+            userGrid[r][c] = parseInt(d, 10);
+          }
+        });
+        renderBoard();
+        attemptUnlock();
+        showToast(`🎮 Code '${currentConfig.targetCode}' ingevuld!`);
+      });
+
+      // Deelbare link kopiëren
+      elBtnCopyShareLink.addEventListener('click', () => {
+        const url = new URL(window.location.href);
+        url.searchParams.set('code', currentConfig.targetCode);
+        url.searchParams.set('url', currentConfig.targetUrl);
+
+        navigator.clipboard.writeText(url.toString())
+          .then(() => showToast('🔗 Deelbare link gekopieerd!'))
+          .catch(() => prompt('Kopieer deze link:', url.toString()));
+      });
+
+      // Reset
+      elBtnResetConfig.addEventListener('click', () => {
+        if (confirm('Wil je de instellingen herstellen naar standaard?')) {
+          try {
+            localStorage.removeItem(STORAGE_KEY);
+          } catch (e) {}
+          currentConfig = { ...DEFAULT_CONFIG };
+          elCfgTargetCode.value = currentConfig.targetCode;
+          elCfgTargetUrl.value = currentConfig.targetUrl;
+          userGrid = JSON.parse(JSON.stringify(INITIAL_GRID));
+          lockInputs.forEach(i => i.value = '');
+          renderBoard();
+          showToast('Instellingen hersteld naar standaard');
+        }
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', initUI);
+  </script>
+</body>
+</html>

@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Explore 2026 - Quest Hunt Menu</title>
+  <meta name="description" content="Explore 2026 Quest Hunt - Ontdek de missies en kraak de geheimen!">
+  <link rel="icon" type="image/png" href="../logo.png">
+  
+  <!-- Explore 2026 Arcade Thema Basis -->
+  <link rel="stylesheet" href="../style.css">
+
+  <style>
+    /* Quest Cards Grid */
+    .quest-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-top: 6px;
+    }
+
+    .quest-card {
+      background: var(--card);
+      border: 1.5px solid rgba(255, 255, 255, 0.12);
+      border-radius: var(--radius);
+      padding: 16px 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.15s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .quest-card:not(.locked):hover {
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 16px rgba(0, 240, 255, 0.3);
+    }
+
+    .quest-card:not(.locked):active {
+      transform: scale(0.98);
+    }
+
+    .quest-card.locked {
+      opacity: 0.72;
+      border-style: dashed;
+      cursor: not-allowed;
+    }
+
+    .quest-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .quest-tag {
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+
+    .tag-cyan {
+      background: rgba(0, 240, 255, 0.15);
+      color: var(--neon-cyan);
+      border: 1px solid rgba(0, 240, 255, 0.35);
+    }
+
+    .tag-pink {
+      background: rgba(255, 0, 127, 0.15);
+      color: var(--neon-pink);
+      border: 1px solid rgba(255, 0, 127, 0.35);
+    }
+
+    .tag-yellow {
+      background: rgba(255, 230, 0, 0.15);
+      color: var(--neon-yellow);
+      border: 1px solid rgba(255, 230, 0, 0.35);
+    }
+
+    .tag-muted {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-muted);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .quest-title-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .quest-icon {
+      font-size: 2.2rem;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+
+    .quest-info {
+      flex: 1;
+      text-align: left;
+    }
+
+    .quest-name {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #ffffff;
+      line-height: 1.25;
+      margin-bottom: 3px;
+    }
+
+    .quest-desc {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.35;
+    }
+
+    /* Actieknop op de kaart */
+    .btn-quest-action {
+      width: 100%;
+      border: none;
+      border-radius: 8px;
+      padding: 11px 14px;
+      font-size: 0.92rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      text-decoration: none;
+      transition: filter 0.15s ease;
+      margin-top: 4px;
+    }
+
+    .btn-quest-action.btn-cyan {
+      background: linear-gradient(135deg, var(--neon-cyan) 0%, var(--neon-blue) 100%);
+      color: #04080e;
+      box-shadow: 0 0 10px rgba(0, 240, 255, 0.35);
+    }
+
+    .btn-quest-action.btn-pink {
+      background: linear-gradient(135deg, var(--neon-pink) 0%, #b30059 100%);
+      color: #ffffff;
+      box-shadow: 0 0 10px rgba(255, 0, 127, 0.35);
+    }
+
+    .btn-quest-action.btn-locked {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-muted);
+      cursor: not-allowed;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #111524;
+      border: 1.5px solid var(--neon-cyan);
+      box-shadow: 0 0 16px rgba(0, 240, 255, 0.4);
+      color: #ffffff;
+      padding: 10px 20px;
+      border-radius: 999px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 10000;
+      white-space: nowrap;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- Header met Explore 2026 Arcade Logo -->
+    <header>
+      <img src="../logo.png" alt="Explore 2026 Arcade Logo" class="app-logo">
+      <h1 class="app-title">QUEST HUNT</h1>
+      <div class="subtitle">Kraak de codes • Voltooi de missies</div>
+    </header>
+
+    <!-- Overzicht van de Quests / Missies -->
+    <main class="quest-grid">
+      <!-- Missie 1: Kampvuurkuil GPS Check -->
+      <a href="ben_jij_in_de_KVK_geweest.html" class="quest-card" id="cardKvk">
+        <div class="quest-top">
+          <span class="quest-tag tag-yellow">Missie 1</span>
+          <span class="quest-tag tag-cyan">📍 GPS Radar</span>
+        </div>
+        <div class="quest-title-row">
+          <div class="quest-icon">🔥</div>
+          <div class="quest-info">
+            <h2 class="quest-name">Ben jij al in de kampvuurkuil geweest??</h2>
+            <p class="quest-desc">
+              Vind de geheime kampvuurkuil op het terrein met behulp van de interactieve GPS-afstandsradar.
+            </p>
+          </div>
+        </div>
+        <div class="btn-quest-action btn-cyan">
+          Start GPS Missie 🔥
+        </div>
+      </a>
+
+      <!-- Missie 2: Morse Code Kraken -->
+      <a href="heb_jij_de_morse_code_all.html" class="quest-card" id="cardMorse">
+        <div class="quest-top">
+          <span class="quest-tag tag-yellow">Missie 2</span>
+          <span class="quest-tag tag-pink">📻 Audio Cipher</span>
+        </div>
+        <div class="quest-title-row">
+          <div class="quest-icon">📻</div>
+          <div class="quest-info">
+            <h2 class="quest-name">Heb jij de morse code al??</h2>
+            <p class="quest-desc">
+              Luister naar de mysterieuze radio-uitzending, vertaal de piepjes en ontcijfer het geheime codewoord.
+            </p>
+          </div>
+        </div>
+        <div class="btn-quest-action btn-pink">
+          Start Morse Missie 📻
+        </div>
+      </a>
+
+      <!-- Missie 3: Kraak het Sudoku Slot -->
+      <a href="puzzel_2_sudoku.html" class="quest-card" id="cardPuzzle2">
+        <div class="quest-top">
+          <span class="quest-tag tag-yellow">Missie 3</span>
+          <span class="quest-tag tag-yellow">🔢 Sudoku Slot</span>
+        </div>
+        <div class="quest-title-row">
+          <div class="quest-icon">🔐</div>
+          <div class="quest-info">
+            <h2 class="quest-name">Kraak het Sudoku Slot</h2>
+            <p class="quest-desc">
+              Los de deels ingevulde Sudoku op, ontdek de 4 gouden sleutelgetallen en open het cijferslot.
+            </p>
+          </div>
+        </div>
+        <div class="btn-quest-action" style="background: linear-gradient(135deg, var(--neon-yellow) 0%, #e6a800 100%); color: #04080e; box-shadow: 0 0 10px rgba(255, 230, 0, 0.35);">
+          Start Sudoku Missie 🔐
+        </div>
+      </a>
+
+      <!-- Missie 4: De Grote Arcade Rebus -->
+      <a href="puzzel_3_rebus.html" class="quest-card" id="cardPuzzle3">
+        <div class="quest-top">
+          <span class="quest-tag tag-yellow">Missie 4 • Finale</span>
+          <span class="quest-tag tag-cyan">🎯 Arcade Rebus</span>
+        </div>
+        <div class="quest-title-row">
+          <div class="quest-icon">🏆</div>
+          <div class="quest-info">
+            <h2 class="quest-name">De Grote Arcade Rebus</h2>
+            <p class="quest-desc">
+              Ontcijfer de retro beeldpuzzel en vind het geheime arcade codewoord van de grote finale!
+            </p>
+          </div>
+        </div>
+        <div class="btn-quest-action btn-cyan">
+          Start Finale Rebus 🏆
+        </div>
+      </a>
+    </main>
+  </div>
+
+  <!-- Toast notificatie -->
+  <div id="toast" class="toast">Melding</div>
+
+  <script>
+    /**
+     * Explore 2026 - Quest Hunt Menu Controller
+     */
+    const elToast = document.getElementById('toast');
+
+    function showToast(msg) {
+      if (!elToast) return;
+      elToast.textContent = msg;
+      elToast.classList.add('show');
+      setTimeout(() => elToast.classList.remove('show'), 2600);
+    }
+
+    function showLockedMessage(name) {
+      showToast(`🔒 ${name} wordt tijdens het evenement ontgrendeld!`);
+    }
+  </script>
+</body>
+</html>

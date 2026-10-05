@@ -18,12 +18,17 @@ A lightweight, mobile-first web app hosted on **GitHub Pages** that dynamically 
 ## Project Structure
 
 - **Front-end (Visuals & Mobile UI):**
-  - [index.html](file:///run/media/bertvanlange/Shared/Git_projects/draaiboek_index/index.html): Mobile-first layout with Arcade logo and saved chips.
-  - [ben_jij_in_de_KVK_geweest.html](file:///run/media/bertvanlange/Shared/Git_projects/draaiboek_index/ben_jij_in_de_KVK_geweest.html): GPS Geolocation check (*Ben jij al in de kampvuurkuil geweest??*) with radar proximity tracking and target redirection.
+  - [index.html](file:///run/media/bertvanlange/Shared/Git_projects/draaiboek_index/index.html): Mobile-first layout with Arcade logo, search, and saved chips.
   - [style.css](file:///run/media/bertvanlange/Shared/Git_projects/draaiboek_index/style.css): Explore 2026 Arcade retro theme (neon cyan/magenta/yellow).
   - [app.js](file:///run/media/bertvanlange/Shared/Git_projects/draaiboek_index/app.js): Search filter, dropdown selection, and multi-save management.
 - **Back-end (Data & Google Sheets Integration):**
   - [backend.js](file:///run/media/bertvanlange/Shared/Git_projects/draaiboek_index/backend.js): Reads `?sheet=` URL parameter, parses CSV, extracts script IDs, and dynamically generates randomized fake test data if no sheet is provided.
+- **Quest Hunt Speurtocht (`quest_hunt/`):**
+  - [quest_hunt/quest_hunt_menu.html](file:///run/media/bertvanlange/Shared/Git_projects/draaiboek_index/quest_hunt/quest_hunt_menu.html): Centrale missie-hub met links naar alle uitdagingen.
+  - [quest_hunt/ben_jij_in_de_KVK_geweest.html](file:///run/media/bertvanlange/Shared/Git_projects/draaiboek_index/quest_hunt/ben_jij_in_de_KVK_geweest.html): GPS Geolocation check (*Ben jij al in de kampvuurkuil geweest??*) met radar-nabijheidsdetector en automatische doorverwijzing.
+  - [quest_hunt/heb_jij_de_morse_code_all.html](file:///run/media/bertvanlange/Shared/Git_projects/draaiboek_index/quest_hunt/heb_jij_de_morse_code_all.html): Morse Code Audio Cipher (*Heb jij de morse code al??*) met ingebouwde veldontvanger speler, codewoord-invoer, morse alfabet spiekbrief en feestelijke confetti.
+  - [quest_hunt/puzzel_2_sudoku.html](file:///run/media/bertvanlange/Shared/Git_projects/draaiboek_index/quest_hunt/puzzel_2_sudoku.html): Kraak het Sudoku Slot (*Puzzel 2*) met interactief 9x9 rooster, 4 gemarkeerde slot-vakjes, on-screen toetsenbord en cijferslot-mechaniek.
+  - [quest_hunt/puzzel_3_rebus.html](file:///run/media/bertvanlange/Shared/Git_projects/draaiboek_index/quest_hunt/puzzel_3_rebus.html): De Grote Arcade Rebus (*Missie 4 Finale*) met retro vector-illustraties, letterformules, hintssysteem en feestelijke eindontgrendeling.
 
 ---
 
@@ -49,19 +54,61 @@ The app will dynamically generate a randomized set of fake names, test roles, un
 
 ---
 
-### 3. Kampvuurkuil GPS Check (`ben_jij_in_de_KVK_geweest.html`)
-Checks if a participant is physically in or near the campfire pit (*kampvuurkuil*) using HTML5 Geolocation. If within range, celebratory confetti triggers and the user is redirected to the destination URL.
+### 3. Quest Hunt Speurtocht (`quest_hunt/`)
 
-- **Direct link (uses default Het Naaldenveld coordinates or saved location):**
+#### A. Quest Hunt Menu (`quest_hunt/quest_hunt_menu.html`)
+Overzichtspagina met alle missies van Explore 2026.
+
+- **Direct link:**
   ```text
-  https://<username>.github.io/draaiboek_index/ben_jij_in_de_KVK_geweest.html
+  https://<username>.github.io/draaiboek_index/quest_hunt/
   ```
-- **Custom coordinates via URL parameters:**
+
+#### B. Kampvuurkuil GPS Check (`quest_hunt/ben_jij_in_de_KVK_geweest.html`)
+Controleert of een deelnemer fysiek in de kampvuurkuil staat met behulp van HTML5 Geolocation.
+
+- **Direct link:**
   ```text
-  https://<username>.github.io/draaiboek_index/ben_jij_in_de_KVK_geweest.html?lat=52.363000&lng=4.580000&radius=35&url=index.html
+  https://<username>.github.io/draaiboek_index/quest_hunt/ben_jij_in_de_KVK_geweest.html
   ```
-- **Features:**
-  - Real-time distance calculation & "warm/koud" proximity thermometer.
-  - Built-in test simulator (*"Simuleer in Kuil"*) to test without travelling.
-  - Organizer tool (*"Sla Huidige Plek Op"*) to set coordinates on-site with 1 click.
-  - Generates shareable QR/URL links directly from the settings panel.
+- **Aanpasbare coördinaten:**
+  `?lat=52.353681&lng=4.570565&radius=35&url=https://...`
+- **Features:** Real-time warm/koud thermometer, testsimulator (*"Simuleer in Kuil"*), beheerpaneel en automatische doorsturing.
+
+#### C. Morse Code Mysterie (`quest_hunt/heb_jij_de_morse_code_all.html`)
+Laat deelnemers luisteren naar het audiobestand `morsecode_0fcoa9ena53sfomg6ibikmvutj.wav` en het geheime codewoord ontcijferen (*MARIOKART*).
+
+- **Direct link:**
+  ```text
+  https://<username>.github.io/draaiboek_index/quest_hunt/heb_jij_de_morse_code_all.html
+  ```
+- **Aanpasbaar codewoord & URL:**
+  `?code=MARIOKART&url=https://...`
+- **Features:** Audio visualizer met equalizer bars, afspeelsnelheid schakelaar (1.0x / 0.75x), morse-alfabet spiekbrief, confetti animatie en instellingenpaneel.
+
+#### D. Sudoku Cijferslot (`quest_hunt/puzzel_2_sudoku.html`)
+Laat deelnemers een deels ingevulde 9x9 Sudoku oplossen om de getallen in de 4 gemarkeerde gouden slot-vakjes (①, ②, ③, ④) te vinden. Deze 4 cijfers vormen de combinatie van het cijferslot (*4529*).
+
+- **Direct link:**
+  ```text
+  https://<username>.github.io/draaiboek_index/quest_hunt/puzzel_2_sudoku.html
+  ```
+- **Aanpasbare cijfercode & URL:**
+  `?code=4529&url=https://...`
+- **Features:** Touch keypad (1-9 & wissen), automatische synchronisatie tussen Sudoku-rooster en slot-dials, ontgrendel-animatie, confetti en instellingenpaneel.
+
+#### E. De Grote Arcade Rebus (`quest_hunt/puzzel_3_rebus.html`)
+Het sluitstuk van de Explore 2026 Quest Hunt! Deelnemers ontcijferen een duidelijke, 5-woorden tellende retro arcade beeldpuzzel om de geheime finale-zin (*KRAAK DE KLUIS EN WIN*) te vinden:
+1. **Woord 1:** 🚰 KRAAN (`N ➔ K`) = **KRAAK**
+2. **Woord 2:** 🚪 DEUR (`- UR`) = **DE**
+3. **Woord 3:** 🏠 HUIS (`H ➔ KL`) = **KLUIS**
+4. **Woord 4:** 🦆 EEND (`- D`) = **EN**
+5. **Woord 5:** 🌬️ WIND (`- D`) = **WIN**
+
+- **Direct link:**
+  ```text
+  https://<username>.github.io/draaiboek_index/quest_hunt/puzzel_3_rebus.html
+  ```
+- **Aanpasbaar codewoord & URL:**
+  `?code=KRAAK+DE+KLUIS+EN+WIN&url=https://...`
+- **Features:** 5 overzichtelijke woordvakjes met heldere vector-illustraties, letterformules, interactieve hint-knop, confetti-animatie en spelleiders-beheerpaneel.
