@@ -63,12 +63,3 @@ Overzichtspagina met alle missies van Explore 2026.
   ```text
   https://<username>.github.io/draaiboek_index/quest_hunt/
   ```
-
-
-
-
-
-
-
-
-
