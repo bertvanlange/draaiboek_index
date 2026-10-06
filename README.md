@@ -64,51 +64,11 @@ Overzichtspagina met alle missies van Explore 2026.
   https://<username>.github.io/draaiboek_index/quest_hunt/
   ```
 
-#### B. Kampvuurkuil GPS Check (`quest_hunt/ben_jij_in_de_KVK_geweest.html`)
-Controleert of een deelnemer fysiek in de kampvuurkuil staat met behulp van HTML5 Geolocation.
 
-- **Direct link:**
-  ```text
-  https://<username>.github.io/draaiboek_index/quest_hunt/ben_jij_in_de_KVK_geweest.html
-  ```
-- **Aanpasbare coördinaten:**
-  `?lat=52.353681&lng=4.570565&radius=35&url=https://...`
-- **Features:** Real-time warm/koud thermometer, testsimulator (*"Simuleer in Kuil"*), beheerpaneel en automatische doorsturing.
 
-#### C. Morse Code Mysterie (`quest_hunt/heb_jij_de_morse_code_all.html`)
-Laat deelnemers luisteren naar het audiobestand `morsecode_0fcoa9ena53sfomg6ibikmvutj.wav` en het geheime codewoord ontcijferen (*MARIOKART*).
 
-- **Direct link:**
-  ```text
-  https://<username>.github.io/draaiboek_index/quest_hunt/heb_jij_de_morse_code_all.html
-  ```
-- **Aanpasbaar codewoord & URL:**
-  `?code=MARIOKART&url=https://...`
-- **Features:** Audio visualizer met equalizer bars, afspeelsnelheid schakelaar (1.0x / 0.75x), morse-alfabet spiekbrief, confetti animatie en instellingenpaneel.
 
-#### D. Sudoku Cijferslot (`quest_hunt/puzzel_2_sudoku.html`)
-Laat deelnemers een deels ingevulde 9x9 Sudoku oplossen om de getallen in de 4 gemarkeerde gouden slot-vakjes (①, ②, ③, ④) te vinden. Deze 4 cijfers vormen de combinatie van het cijferslot (*4529*).
 
-- **Direct link:**
-  ```text
-  https://<username>.github.io/draaiboek_index/quest_hunt/puzzel_2_sudoku.html
-  ```
-- **Aanpasbare cijfercode & URL:**
-  `?code=4529&url=https://...`
-- **Features:** Touch keypad (1-9 & wissen), automatische synchronisatie tussen Sudoku-rooster en slot-dials, ontgrendel-animatie, confetti en instellingenpaneel.
 
-#### E. De Grote Arcade Rebus (`quest_hunt/puzzel_3_rebus.html`)
-Het sluitstuk van de Explore 2026 Quest Hunt! Deelnemers ontcijferen een duidelijke, 5-woorden tellende retro arcade beeldpuzzel om de geheime finale-zin (*KRAAK DE KLUIS EN WIN*) te vinden:
-1. **Woord 1:** 🚰 KRAAN (`N ➔ K`) = **KRAAK**
-2. **Woord 2:** 🚪 DEUR (`- UR`) = **DE**
-3. **Woord 3:** 🏠 HUIS (`H ➔ KL`) = **KLUIS**
-4. **Woord 4:** 🦆 EEND (`- D`) = **EN**
-5. **Woord 5:** 🌬️ WIND (`- D`) = **WIN**
 
-- **Direct link:**
-  ```text
-  https://<username>.github.io/draaiboek_index/quest_hunt/puzzel_3_rebus.html
-  ```
-- **Aanpasbaar codewoord & URL:**
-  `?code=KRAAK+DE+KLUIS+EN+WIN&url=https://...`
-- **Features:** 5 overzichtelijke woordvakjes met heldere vector-illustraties, letterformules, interactieve hint-knop, confetti-animatie en spelleiders-beheerpaneel.
+
